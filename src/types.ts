@@ -1,6 +1,6 @@
 /**
- * Type definitions for aso-copilot CLI
- * Expo EAS Metadata Generator for iOS App Store
+ * Type definitions for app-release-copilot CLI
+ * Metadata Generator for iOS App Store
  */
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -96,4 +96,6 @@ export interface GeneratedMetadata {
   keywords?: string[];
   releaseNotes?: string;
   promoText?: string;
+  iconPath?: string;
+  featureGraphicPath?: string;
 }

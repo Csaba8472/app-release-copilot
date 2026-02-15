@@ -1,11 +1,13 @@
 /**
- * Display module for ASO Copilot TUI
+ * Display module for App Release Copilot TUI
  * Renders the beautiful terminal interface for Expo metadata generation
  */
 
 import { createRequire } from "module";
 import { extractNumberedItems } from "../utils/clipboard.js";
 import type { AppInfo, CHAR_LIMITS } from "../types.js";
+import type { GeneratedImage } from "../services/image.js";
+import { formatFileSize } from "../services/image.js";
 import { 
   c, 
   BOX, 
@@ -62,7 +64,7 @@ export function printHeader(): void {
   // Tagline
   console.log();
   console.log(c.dim("  " + "─".repeat(WIDTH - 4)));
-  console.log(c.dim("  ") + c.text("Expo EAS Metadata Generator for iOS App Store") + c.dim(" │ ") + c.brand(`v${version}`));
+  console.log(c.dim("  ") + c.text("Metadata Generator for iOS App Store") + c.dim(" │ ") + c.brand(`v${version}`));
   console.log(c.dim("  " + "─".repeat(WIDTH - 4)));
   console.log();
 }
@@ -189,6 +191,13 @@ export function printHelp(): void {
     { cmd: "/full", desc: "Generate complete package" },
   ];
   
+  const imageCommands = [
+    { cmd: "/icon", desc: "Generate app icon (interactive)" },
+    { cmd: "/icon <desc>", desc: "Icon with custom subject" },
+    { cmd: "/feature", desc: "Generate feature graphic (interactive)" },
+    { cmd: "/feature <desc>", desc: "Feature graphic with custom subject" },
+  ];
+  
   const utilCommands = [
     { cmd: "/score <kw>", desc: "Score a keyword" },
     { cmd: "/export", desc: "Export store.config.json" },
@@ -208,6 +217,14 @@ export function printHelp(): void {
     }
   }
   if (row.trim()) console.log(row);
+  
+  console.log();
+  console.log("  " + c.brand("Image Generation"));
+  row = "   ";
+  for (const { cmd, desc } of imageCommands) {
+    row += c.info(cmd) + c.dim(` ${desc}`) + "  ";
+  }
+  console.log(row);
   
   console.log();
   console.log("  " + c.brand("Tools"));
@@ -425,6 +442,30 @@ export function printError(message: string): void {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// IMAGE RESULT DISPLAY
+// ════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Print image generation result
+ */
+export function printImageResult(image: GeneratedImage, imageType: "icon" | "feature"): void {
+  const label = imageType === "icon" ? "App Icon" : "Feature Graphic";
+  const icon = imageType === "icon" ? "🎨" : "🖼️";
+  
+  console.log();
+  console.log("  " + c.whiteBold(`${icon} ${label} Generated`));
+  console.log("  " + c.border("─".repeat(WIDTH - 4)));
+  console.log();
+  console.log("  " + c.dim("File: ") + c.info(image.filePath));
+  console.log("  " + c.dim("Size: ") + c.text(`${image.width}×${image.height}`) + c.dim(" px"));
+  console.log("  " + c.dim("Format: ") + c.text(image.format.toUpperCase()));
+  console.log("  " + c.dim("File size: ") + c.text(formatFileSize(image.fileSize)));
+  console.log();
+  console.log("  " + c.dim("Type /export to include in your store.config.json export"));
+  console.log();
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // GOODBYE
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -433,7 +474,7 @@ export function printError(message: string): void {
  */
 export function printGoodbye(): void {
   console.log();
-  console.log("  " + c.brand(ICON.sparkle) + " " + c.dim("Thanks for using ASO Copilot!"));
+  console.log("  " + c.brand(ICON.sparkle) + " " + c.dim("Thanks for using App Release Copilot!"));
   console.log();
 }
 
@@ -449,6 +490,8 @@ export const CONTENT_ICONS: Record<string, string> = {
   releaseNotes: ICON.release,
   promoText: ICON.promo,
   full: ICON.rocket,
+  icon: "🎨",
+  feature: "🖼️",
 };
 
 export const CONTENT_LABELS: Record<string, string> = {
@@ -459,4 +502,6 @@ export const CONTENT_LABELS: Record<string, string> = {
   releaseNotes: "What's New",
   promoText: "Promo Text Options",
   full: "Full ASO Package",
+  icon: "App Icon",
+  feature: "Feature Graphic",
 };

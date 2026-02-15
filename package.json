@@ -1,10 +1,10 @@
 {
-  "name": "aso-copilot",
-  "version": "1.0.0",
-  "description": "Expo EAS Metadata Generator for iOS App Store using GitHub Copilot",
+  "name": "app-release-copilot",
+  "version": "1.0.1",
+  "description": "Metadata Generator for iOS App Store using GitHub Copilot",
   "type": "module",
   "bin": {
-    "aso-copilot": "./dist/index.js"
+    "app-release-copilot": "./dist/index.js"
   },
   "files": [
     "dist",
@@ -35,21 +35,26 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Csaba8472/aso-copilot.git"
+    "url": "https://github.com/Csaba8472/app-release-copilot.git"
   },
-  "homepage": "https://github.com/Csaba8472/aso-copilot#readme",
+  "homepage": "https://github.com/Csaba8472/app-release-copilot#readme",
   "bugs": {
-    "url": "https://github.com/Csaba8472/aso-copilot/issues"
+    "url": "https://github.com/Csaba8472/app-release-copilot/issues"
   },
   "dependencies": {
     "@github/copilot-sdk": "^0.1.15",
+    "@google/genai": "^1.41.0",
     "@inquirer/prompts": "^7.0.0",
     "chalk": "^5.3.0",
     "clipboardy": "^4.0.0",
     "commander": "^12.0.0",
-    "ora": "^8.0.0"
+    "mime": "^4.1.0",
+    "openai": "^6.22.0",
+    "ora": "^8.0.0",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
+    "@types/mime": "^3.0.4",
     "@types/node": "^20.0.0",
     "typescript": "^5.3.0"
   },

@@ -1,4 +1,4 @@
-# aso-copilot
+# app-release-copilot
 
 An interactive CLI for generating AI-powered App Store Optimization (ASO) metadata for iOS apps using the GitHub Copilot SDK.
 
@@ -10,6 +10,8 @@ An interactive CLI for generating AI-powered App Store Optimization (ASO) metada
 - **Keywords** - AI-analyzed keywords with traffic/difficulty scores (100 char limit)
 - **Release Notes** - What's New content for updates (4000 chars)
 - **Promo Text** - Short promotional taglines (170 chars)
+- **App Icon** - Generate a SnapAI-backed 1024×1024 app icon image
+- **Feature Graphic** - Generate a SnapAI-backed Android-ready 1024×500 PNG/JPEG
 - **Full Package** - Generate all metadata at once
 - **Keyword Scoring** - Analyze any keyword for traffic & competition
 - **Export** - Generate Expo `store.config.json` for EAS Metadata
@@ -35,8 +37,8 @@ The app checks authentication on startup. If not authenticated, it will prompt y
 From source:
 
 ```bash
-git clone https://github.com/Csaba8472/aso-copilot
-cd aso-copilot
+git clone https://github.com/Csaba8472/app-release-copilot
+cd app-release-copilot
 npm install
 npm run build
 npm link
@@ -46,7 +48,7 @@ npm link
 
 ```bash
 # Start interactive mode
-aso-copilot
+app-release-copilot
 ```
 
 You'll be prompted to enter:
@@ -56,7 +58,7 @@ You'll be prompted to enter:
 
 ## Chat-Style Interface
 
-ASO Copilot uses a chat-style interface with slash commands:
+App Release Copilot uses a chat-style interface with slash commands:
 
 ### Content Commands
 
@@ -68,6 +70,8 @@ ASO Copilot uses a chat-style interface with slash commands:
 | `/keywords` | Generate keywords with scoring |
 | `/release` | Generate What's New content |
 | `/promo` | Generate promo text (170 chars) |
+| `/icon` | Generate SnapAI app icon |
+| `/feature` | Generate SnapAI Android feature graphic |
 | `/full` | Generate complete ASO package |
 
 ### Utility Commands
@@ -75,7 +79,9 @@ ASO Copilot uses a chat-style interface with slash commands:
 | Command | Description |
 |---------|-------------|
 | `/score <kw>` | Score a specific keyword |
+| `/research` | Find good keywords (popularity > 40, difficulty < 60) |
 | `/export` | Export store.config.json |
+| `/apikey` | Show/set/reset SnapAI API key (`/apikey set`, `/apikey reset`) |
 | `/copy` | Copy last content to clipboard |
 | `/last` | Show last generated content |
 | `/model` | Switch AI model |
@@ -83,6 +89,8 @@ ASO Copilot uses a chat-style interface with slash commands:
 | `/clear` | Clear screen |
 | `/help` | Show available commands |
 | `/quit` | Exit the app |
+
+`/icon` and `/feature` are backed by SnapAI. If no key is configured, the CLI prompts for your SnapAI API key and stores it in your user config directory (`%APPDATA%\app-release-copilot` on Windows, `~/.app-release-copilot` otherwise). You can also onboard manually with `/apikey set`, check with `/apikey`, and clear with `/apikey reset`. Environment variables `SNAPAI_API_KEY` and `OPENAI_API_KEY` are still supported as fallback.
 
 ### Natural Language Refinement
 

@@ -1,8 +1,8 @@
-# ASO Copilot - Copilot Instructions
+# App Release Copilot - Copilot Instructions
 
 ## Project Overview
 
-ASO Copilot v1.0 is a chat-style CLI for generating AI-powered App Store Optimization (ASO) metadata for iOS apps using the GitHub Copilot SDK. It generates metadata compatible with Expo EAS Metadata format.
+App Release Copilot v1.0 is a chat-style CLI for generating AI-powered App Store Optimization (ASO) metadata for iOS apps using the GitHub Copilot SDK. It generates metadata compatible with Expo EAS Metadata format.
 
 ## Publishing Workflow
 
@@ -78,6 +78,7 @@ The interface uses **slash commands** for a chat-like experience:
 /full       Generate complete ASO package
 
 /score <kw> Score a specific keyword
+/research   Find good keywords (popularity > 40, difficulty < 60)
 /export     Export store.config.json
 /copy       Copy last content to clipboard
 /model      Switch AI model
@@ -88,7 +89,7 @@ The interface uses **slash commands** for a chat-like experience:
 
 ## Visual Components
 
-- **ASCII Art Header** - Gradient-colored "ASO COPILOT" block letter logo (blue to purple)
+- **ASCII Art Header** - Gradient-colored "ARC COPILOT" block letter logo (blue to purple)
 - **App Info Panel** - Box showing current app name, description, App Store URL
 - **Status Bar** - Model badge, quota display, "/help for commands" hint
 - **Content Panels** - Generated content displayed in styled sections

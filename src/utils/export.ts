@@ -2,8 +2,8 @@
  * Export utilities for generating Expo store.config.json
  */
 
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
+import { writeFile, mkdir, copyFile } from "fs/promises";
+import { join, extname } from "path";
 import type { ExpoStoreConfig, GeneratedMetadata } from "../types.js";
 
 /**
@@ -76,6 +76,31 @@ export async function exportStoreConfig(
     JSON.stringify(config, null, 2),
     "utf-8"
   );
+  
+  // Copy generated images if available
+  const copiedFiles: string[] = ["store.config.json"];
+  
+  if (metadata.iconPath) {
+    const iconExt = extname(metadata.iconPath) || ".png";
+    const iconDest = join(folderPath, `icon${iconExt}`);
+    try {
+      await copyFile(metadata.iconPath, iconDest);
+      copiedFiles.push(`icon${iconExt}`);
+    } catch {
+      // Icon file may have been deleted; skip silently
+    }
+  }
+  
+  if (metadata.featureGraphicPath) {
+    const featureExt = extname(metadata.featureGraphicPath) || ".png";
+    const featureDest = join(folderPath, `feature${featureExt}`);
+    try {
+      await copyFile(metadata.featureGraphicPath, featureDest);
+      copiedFiles.push(`feature${featureExt}`);
+    } catch {
+      // Feature graphic file may have been deleted; skip silently
+    }
+  }
   
   return folderPath;
 }

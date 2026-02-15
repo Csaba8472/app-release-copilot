@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * ASO Copilot CLI v1.0
- * Expo EAS Metadata Generator for iOS App Store
+ * App Release Copilot CLI v1.0
+ * Metadata Generator for iOS App Store
  * 
  * Chat-style interface with slash commands.
  */
@@ -44,6 +44,7 @@ import {
   printSuccess,
   printError,
   printGoodbye,
+  printImageResult,
   CONTENT_ICONS,
   CONTENT_LABELS,
 } from "./ui/display.js";
@@ -53,6 +54,10 @@ import {
   promptAppStoreUrl,
   promptModel,
   promptCommand,
+  promptImageProvider,
+  promptImageStyle,
+  promptImageSubject,
+  promptImageConfirm,
   parseCommand,
   getAvailableModels,
   type ContentType,
@@ -64,11 +69,19 @@ import {
   fetchAvailableModels,
   type ModelId, 
 } from "./services/copilot.js";
+import {
+  generateImage,
+  hasImageProvider,
+  getAvailableProviders,
+  type ImageProvider,
+  type ImageType,
+} from "./services/image.js";
 import { fetchAppStoreMetadata, isAppStoreUrl } from "./utils/appstore.js";
 import { exportStoreConfig, extractFirstOption, extractDescription, parseKeywordsFromContent } from "./utils/export.js";
 import { copyToClipboard, extractNumberedItems } from "./utils/clipboard.js";
 import { c, ICON } from "./ui/themes.js";
 import type { AppInfo, GeneratedMetadata } from "./types.js";
+import ora from "ora";
 
 const program = new Command();
 
@@ -414,6 +427,14 @@ async function run(): Promise<void> {
         await handleImportUrl();
         break;
 
+      case "icon":
+        await handleIcon(command.prompt);
+        break;
+
+      case "feature":
+        await handleFeature(command.prompt);
+        break;
+
       case "content":
         await handleContent(command.contentType);
         break;
@@ -525,6 +546,130 @@ async function handleExport(): Promise<void> {
   }
 }
 
+/**
+ * Shared interactive image generation flow for both /icon and /feature.
+ * Lets users choose provider, style, and subject with a preview + confirm loop.
+ */
+async function handleImageGeneration(
+  imageType: "icon" | "feature",
+  inlinePrompt?: string,
+): Promise<void> {
+  const label = imageType === "icon" ? "App Icon" : "Feature Graphic";
+
+  if (!hasImageProvider()) {
+    printError(
+      "No image generation API key found.\n" +
+      "  Set OPENAI_API_KEY or GEMINI_API_KEY environment variable."
+    );
+    return;
+  }
+
+  try {
+    // ── Initial defaults ────────────────────────────────────────────────
+    const providers = getAvailableProviders();
+    let provider: ImageProvider = providers.length === 1
+      ? providers[0]
+      : await promptImageProvider();
+
+    let style = await promptImageStyle();
+
+    // Subject: use inline prompt if given via "/icon some text", else interactive
+    let prompt = inlinePrompt
+      ?? await promptImageSubject(
+           imageType,
+           state.appInfo.name,
+           state.appInfo.description,
+         );
+
+    // ── Preview / confirm loop ─────────────────────────────────────────
+    while (true) {
+      const action = await promptImageConfirm({
+        imageType,
+        provider,
+        style: style ?? undefined,
+        promptPreview: prompt,
+      });
+
+      if (action === "cancel") {
+        console.log(c.muted("  Cancelled."));
+        return;
+      }
+
+      if (action === "edit") {
+        // Let user re-pick any setting
+        const editWhat = await (await import("@inquirer/prompts")).select({
+          message: c.brand("What to change?"),
+          choices: [
+            { name: "Subject / prompt", value: "subject" as const },
+            { name: "Style",            value: "style" as const },
+            ...(providers.length > 1
+              ? [{ name: "Provider", value: "provider" as const }]
+              : []),
+          ],
+          theme: { prefix: "  " + c.brand("✏️") },
+        });
+
+        switch (editWhat) {
+          case "subject":
+            prompt = await promptImageSubject(
+              imageType,
+              state.appInfo.name,
+              state.appInfo.description,
+            );
+            break;
+          case "style":
+            style = await promptImageStyle();
+            break;
+          case "provider":
+            provider = await promptImageProvider();
+            break;
+        }
+        continue; // loop back to preview
+      }
+
+      // action === "generate"
+      break;
+    }
+
+    // ── Generate ────────────────────────────────────────────────────────
+    const providerName = provider === "openai" ? "OpenAI" : "Gemini";
+    const emoji = imageType === "icon" ? "🎨" : "🖼️ ";
+    const spinner = ora();
+    spinner.start(`${emoji} Generating ${label.toLowerCase()} with ${providerName}...`);
+
+    const result = await generateImage({
+      type: imageType,
+      prompt,
+      provider,
+      style,
+    });
+
+    spinner.succeed(c.success(`${label} generated!`));
+
+    // Store path for export
+    if (imageType === "icon") {
+      state.generatedMetadata.iconPath = result.filePath;
+    } else {
+      state.generatedMetadata.featureGraphicPath = result.filePath;
+    }
+    printImageResult(result, imageType);
+  } catch (error) {
+    if (error instanceof ExitPromptError) {
+      await handleCtrlC();
+      return;
+    }
+    printError(error instanceof Error ? error.message : `${label} generation failed`);
+  }
+}
+
+async function handleIcon(customPrompt?: string): Promise<void> {
+  await handleImageGeneration("icon", customPrompt);
+}
+
+async function handleFeature(customPrompt?: string): Promise<void> {
+  await handleImageGeneration("feature", customPrompt);
+}
+
 async function handleImportUrl(): Promise<void> {
   try {
     const url = await promptAppStoreUrl();
@@ -562,8 +707,8 @@ async function handleImportUrl(): Promise<void> {
 // ════════════════════════════════════════════════════════════════════════════
 
 program
-  .name("aso-copilot")
-  .description("Expo EAS Metadata Generator for iOS App Store")
+  .name("app-release-copilot")
+  .description("Metadata Generator for iOS App Store")
   .version(version);
 
 program
